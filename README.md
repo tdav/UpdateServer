@@ -11,7 +11,7 @@
 
     nano /etc/systemd/system/wa_update_manage_server.service
   
-
+    ==>
     [Unit]
     Description=UpdateManage Server (Main)
 
@@ -30,7 +30,11 @@
 
     [Install]
     WantedBy=multi-user.target
+    <==
 
 
+    systemctl enable  wa_update_manage_server.service
 
+    systemctl start  wa_update_manage_server.service
 
+    systemctl status  wa_update_manage_server.service
