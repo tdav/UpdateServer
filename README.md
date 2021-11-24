@@ -37,4 +37,4 @@
 
     systemctl start  wa_update_manage_server.service
 
-    systemctl status  wa_update_manage_server.service
+    systemctl status  wa_update_manage_server.service 
