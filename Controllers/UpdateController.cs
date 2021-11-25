@@ -134,7 +134,7 @@ namespace AsbtCore.Update.Controllers
                 if (!Version.TryParse(model.Version, out _)) return BadRequest("Файл версияси тугри эмас");
 
                 var path = $"{AppDomain.CurrentDomain.BaseDirectory}UpdateFiles{Path.DirectorySeparatorChar}{model.AppNameDirectory}{Path.DirectorySeparatorChar}";
-                if (System.IO.File.Exists(path + model.Version + "{Path.DirectorySeparatorChar}" + model.FileName)) return BadRequest("Бундай версияда программа бор");
+                if (System.IO.File.Exists(path + model.Version + Path.DirectorySeparatorChar + model.FileName)) return BadRequest("Бундай версияда программа бор");
 
                 List<UpdateInfoModel> list;
 
@@ -153,7 +153,7 @@ namespace AsbtCore.Update.Controllers
 
                 Directory.CreateDirectory(path + model.Version);
 
-                using (var stream = new FileStream(path + model.Version + "{Path.DirectorySeparatorChar}" + model.FileName, FileMode.CreateNew))
+                using (var stream = new FileStream(path + model.Version + Path.DirectorySeparatorChar + model.FileName, FileMode.CreateNew))
                 {
                     await model.FileData.CopyToAsync(stream);
 
