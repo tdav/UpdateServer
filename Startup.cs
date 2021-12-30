@@ -31,7 +31,7 @@ namespace AsbtCore.Update.Server
             services.AddMyAuthentication(conf);            
             services.AddAsbtCoreServerExtensions();
             services.AddMySwagger();
-          
+            services.AddMemoryCache();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

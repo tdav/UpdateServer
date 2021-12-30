@@ -1,6 +1,7 @@
 ﻿using AsbtCore.Update.Server.Models;
 using AsbtCore.UtilsV2;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -17,10 +18,12 @@ namespace AsbtCore.Update.Controllers
     public class UpdateController : ControllerBase
     {
         private readonly ILogger<UpdateController> logger;
+        private readonly IMemoryCache cache;
 
-        public UpdateController(ILogger<UpdateController> logger)
+        public UpdateController(ILogger<UpdateController> logger, IMemoryCache cache)
         {
             this.logger = logger;
+            this.cache = cache;
         }
 
         [HttpGet("check")]
@@ -29,28 +32,33 @@ namespace AsbtCore.Update.Controllers
             try
             {
                 var ver = new Version(version);
-                var path = $"{AppDomain.CurrentDomain.BaseDirectory}UpdateFiles{Path.DirectorySeparatorChar}{app_name}{Path.DirectorySeparatorChar}";
 
-                if (!Directory.Exists(path))
+                List<UpdateInfoModel> ls;
+                if (cache.TryGetValue($"MEM_CHECK_{app_name}", out List<UpdateInfoModel> value))
                 {
-                    Directory.CreateDirectory(path + version);
-
-                    var ls = new List<UpdateInfoModel>();
-                    ls.Add(new UpdateInfoModel() { Name = "Name.txt", Version = "1.0.0", Required = 1, CreateDate = DateTime.Now, DpInfo = "1" });
-                    CFile.SaveFile(ls.ToJson(), path + "index.json");
-                    return NotFound();
+                    ls = value;
+                    return CheckVersion(ls, ver);
                 }
                 else
-                {
-                    var s = CFile.GetFileContents(path + "index.json");
-                    var ls = s.FromJson<List<UpdateInfoModel>>();
-                    UpdateInfoModel lastVersion = ls.Where(x => new Version(x.Version) > ver).OrderByDescending(o=> new Version(o.Version)).FirstOrDefault();                   
+                {                    
+                    var path = $"{AppDomain.CurrentDomain.BaseDirectory}UpdateFiles{Path.DirectorySeparatorChar}{app_name}{Path.DirectorySeparatorChar}";
 
-                    if (lastVersion != null)
-                        return Ok(lastVersion);
-                    else
+                    if (!Directory.Exists(path))
+                    {
                         return NotFound();
-                }
+                    }
+                    else
+                    {
+                        var s = CFile.GetFileContents(path + "index.json");
+                        ls = s.FromJson<List<UpdateInfoModel>>();
+                        
+                        var cacheEntryOptions = new MemoryCacheEntryOptions();
+                        cacheEntryOptions.SetSlidingExpiration(TimeSpan.FromMinutes(1));
+                        cache.Set($"MEM_CHECK_{app_name}", ls, cacheEntryOptions);
+
+                        return CheckVersion(ls, ver);
+                    }
+                } 
             }
             catch (System.Exception ee)
             {
@@ -59,6 +67,17 @@ namespace AsbtCore.Update.Controllers
             }
         }
 
+        private ActionResult CheckVersion(List<UpdateInfoModel> ls, Version ver)
+        {
+            UpdateInfoModel lastVersion = ls.Where(x => new Version(x.Version) > ver).OrderByDescending(o => new Version(o.Version)).FirstOrDefault();
+
+            if (lastVersion != null)
+            {                
+                return Ok(lastVersion);
+            }
+            else
+                return NotFound();
+        }
 
         [HttpGet("download")]
         public async Task<ActionResult> DownloadAsync(string app_name, string version, string name)
