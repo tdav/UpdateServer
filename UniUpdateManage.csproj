@@ -16,8 +16,8 @@
 	<ItemGroup>
 		
 		<PackageReference Include="AsbtCore.AuthenticationOptions" Version="1.0.2" />
-		<PackageReference Include="AsbtCore.Server.Extensions" Version="3.0.0" />
-		<PackageReference Include="AsbtCore.UtilsV2" Version="2.0.15" />
+		<PackageReference Include="AsbtCore.Server.Extensions" Version="6.0.7" />
+		<PackageReference Include="AsbtCore.UtilsV2" Version="2.0.79" />
 		
 		<PackageReference Include="System.ServiceModel.Primitives" Version="4.9.0" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.14.1" />
